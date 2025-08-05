@@ -1,32 +1,134 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Users, Heart, Brain, TrendingUp, Shield, Activity } from "lucide-react";
+import { ArrowRight, Users, Heart, Brain, TrendingUp, Shield, Activity, Droplets, BarChart3, Dna } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Home = () => {
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative bg-hero-gradient py-20 overflow-hidden">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center text-primary-foreground">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              Predictive Blood Donation & Genetic Risk Awareness
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 opacity-90">
-              Proactively connecting Thalassemia patients with blood donors & preventing future Thalassemia cases using AI
-            </p>
-            <Button
-              size="lg"
-              variant="secondary"
-              className="text-lg px-8 py-4"
-              onClick={() => {
-                document.getElementById("quick-links")?.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              Get Started
-              <ArrowRight className="ml-2" size={20} />
-            </Button>
+      {/* Hero Section - Split Screen */}
+      <section className="relative min-h-screen bg-gradient-to-br from-primary via-primary/90 to-destructive overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-20 w-32 h-32 bg-white rounded-full animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-24 h-24 bg-white rounded-full animate-pulse delay-75"></div>
+          <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-white rounded-full animate-pulse delay-150"></div>
+        </div>
+
+        <div className="container mx-auto px-4 min-h-screen flex items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
+            
+            {/* Left Side - Content */}
+            <div className="text-white space-y-8 animate-fade-in">
+              {/* Animated Blood Drop Icon */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="relative">
+                  <Droplets className="w-12 h-12 text-white animate-pulse" />
+                  <div className="absolute inset-0 w-12 h-12">
+                    <Droplets className="w-12 h-12 text-white/50 animate-ping" />
+                  </div>
+                </div>
+                <div className="text-sm font-medium opacity-90">HemoGenesis AI</div>
+              </div>
+
+              {/* Main Tagline */}
+              <div className="space-y-4">
+                <h1 className="text-4xl md:text-6xl font-bold leading-tight animate-fade-in delay-200">
+                  Saving Lives Today,
+                  <span className="block text-accent-foreground">
+                    Preventing Thalassemia Tomorrow
+                  </span>
+                </h1>
+                <p className="text-xl md:text-2xl opacity-90 animate-fade-in delay-300">
+                  AI-powered donor prediction and genetic risk awareness platform.
+                </p>
+              </div>
+
+              {/* Primary CTAs */}
+              <div className="flex flex-col sm:flex-row gap-4 animate-fade-in delay-500">
+                <Link to="/digital-twin">
+                  <Button size="lg" variant="secondary" className="text-lg px-8 py-4 hover-scale">
+                    Check Donor Prediction
+                    <BarChart3 className="ml-2" size={20} />
+                  </Button>
+                </Link>
+                <Link to="/genetic-risk">
+                  <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-white text-white hover:bg-white hover:text-primary hover-scale">
+                    Assess Genetic Risk
+                    <Dna className="ml-2" size={20} />
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Floating Quick Stats */}
+              <div className="flex flex-wrap gap-3 animate-fade-in delay-700">
+                <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium border border-white/30">
+                  🤖 Predictive Donor AI
+                </div>
+                <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium border border-white/30">
+                  🧬 Genetic Awareness Bot
+                </div>
+                <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium border border-white/30">
+                  🩸 Blood Bridge Ready
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Dynamic Illustration */}
+            <div className="relative animate-fade-in delay-300">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+                {/* AI Chart Mockup */}
+                <div className="space-y-6">
+                  <div className="text-white font-semibold text-lg mb-4">Live Donor Prediction</div>
+                  
+                  {/* Chart Bars */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 text-sm text-white/80">Mon</div>
+                      <div className="flex-1 bg-white/20 rounded-full h-4 overflow-hidden">
+                        <div className="bg-gradient-to-r from-accent-foreground to-secondary h-full w-3/4 rounded-full animate-pulse"></div>
+                      </div>
+                      <div className="text-sm text-white font-medium">85%</div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 text-sm text-white/80">Tue</div>
+                      <div className="flex-1 bg-white/20 rounded-full h-4 overflow-hidden">
+                        <div className="bg-gradient-to-r from-accent-foreground to-secondary h-full w-1/2 rounded-full animate-pulse delay-100"></div>
+                      </div>
+                      <div className="text-sm text-white font-medium">60%</div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 text-sm text-white/80">Wed</div>
+                      <div className="flex-1 bg-white/20 rounded-full h-4 overflow-hidden">
+                        <div className="bg-gradient-to-r from-accent-foreground to-secondary h-full w-5/6 rounded-full animate-pulse delay-200"></div>
+                      </div>
+                      <div className="text-sm text-white font-medium">92%</div>
+                    </div>
+                  </div>
+
+                  {/* DNA Risk Calculator Mockup */}
+                  <div className="mt-8 pt-6 border-t border-white/20">
+                    <div className="text-white font-semibold text-lg mb-4">Genetic Risk Calculator</div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white/20 rounded-lg p-4 text-center">
+                        <Dna className="w-8 h-8 text-white mx-auto mb-2" />
+                        <div className="text-sm text-white/80">Parent 1</div>
+                        <div className="text-xs text-accent-foreground font-medium">Carrier</div>
+                      </div>
+                      <div className="bg-white/20 rounded-lg p-4 text-center">
+                        <Dna className="w-8 h-8 text-white mx-auto mb-2" />
+                        <div className="text-sm text-white/80">Parent 2</div>
+                        <div className="text-xs text-accent-foreground font-medium">Non-Carrier</div>
+                      </div>
+                    </div>
+                    <div className="mt-4 bg-gradient-to-r from-secondary/20 to-accent-foreground/20 rounded-lg p-4 text-center border border-white/30">
+                      <div className="text-2xl font-bold text-accent-foreground">25%</div>
+                      <div className="text-sm text-white/80">Risk Level</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
