@@ -159,6 +159,120 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Live Donor Availability */}
+      <section className="py-16 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Live Donor Availability</h2>
+            <p className="text-muted-foreground">Real-time predictions for your area</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <Card className="hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="font-semibold">Mumbai Central</div>
+                  <div className="text-2xl font-bold text-green-600">92%</div>
+                </div>
+                <div className="text-sm text-muted-foreground mb-4">15 donors predicted available today</div>
+                <Link to="/digital-twin">
+                  <Button size="sm" className="w-full">View Details</Button>
+                </Link>
+              </CardContent>
+            </Card>
+            <Card className="hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="font-semibold">Delhi NCR</div>
+                  <div className="text-2xl font-bold text-yellow-600">68%</div>
+                </div>
+                <div className="text-sm text-muted-foreground mb-4">8 donors predicted available today</div>
+                <Link to="/digital-twin">
+                  <Button size="sm" className="w-full">View Details</Button>
+                </Link>
+              </CardContent>
+            </Card>
+            <Card className="hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="font-semibold">Bangalore</div>
+                  <div className="text-2xl font-bold text-green-600">85%</div>
+                </div>
+                <div className="text-sm text-muted-foreground mb-4">12 donors predicted available today</div>
+                <Link to="/digital-twin">
+                  <Button size="sm" className="w-full">View Details</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Genetic Risk Assessment */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-8">Quick Genetic Risk Check</h2>
+            <Card className="p-8">
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Parent 1 Status</label>
+                    <select className="w-full p-3 border rounded-lg">
+                      <option>Select status</option>
+                      <option>Carrier</option>
+                      <option>Non-carrier</option>
+                      <option>Unknown</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Parent 2 Status</label>
+                    <select className="w-full p-3 border rounded-lg">
+                      <option>Select status</option>
+                      <option>Carrier</option>
+                      <option>Non-carrier</option>
+                      <option>Unknown</option>
+                    </select>
+                  </div>
+                </div>
+                <Link to="/genetic-risk">
+                  <Button size="lg" className="w-full">
+                    Calculate Detailed Risk Assessment
+                    <ArrowRight className="ml-2" size={20} />
+                  </Button>
+                </Link>
+                <p className="text-sm text-muted-foreground">
+                  Get comprehensive risk analysis and personalized recommendations
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Emergency Blood Request */}
+      <section className="py-16 bg-destructive/5">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="bg-destructive text-white p-8 rounded-2xl">
+              <h2 className="text-3xl font-bold mb-4">Emergency Blood Request</h2>
+              <p className="text-xl mb-6 opacity-90">
+                Need blood urgently? Our AI will instantly connect you with available donors
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button size="lg" variant="secondary" className="text-lg px-8">
+                  Request Blood Now
+                  <Heart className="ml-2" size={20} />
+                </Button>
+                <Button size="lg" variant="outline" className="text-lg px-8 border-white text-white hover:bg-white hover:text-destructive">
+                  Register as Donor
+                  <Users className="ml-2" size={20} />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Quick Links Section */}
       <section id="quick-links" className="py-20">
         <div className="container mx-auto px-4">
@@ -221,28 +335,169 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Mission Section */}
-      <section className="py-20 bg-section-gradient">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-8">Our Mission</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Creating a Thalassemia-free India by 2035 through AI-powered blood donation prediction 
-            and comprehensive genetic risk awareness programs.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/about">
-              <Button variant="default" size="lg">
-                Learn Our Story
-              </Button>
-            </Link>
-            <Link to="/contact">
-              <Button variant="outline" size="lg">
-                Join Our Mission
-              </Button>
-            </Link>
+      {/* Success Stories */}
+      <section className="py-16 bg-background">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Success Stories</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <Card className="p-6">
+              <CardContent>
+                <div className="mb-4">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                      <Heart className="text-primary" size={24} />
+                    </div>
+                    <div>
+                      <div className="font-semibold">Priya & Raj</div>
+                      <div className="text-sm text-muted-foreground">Mumbai</div>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground">
+                    "HemoGenesis AI helped us understand our genetic risk before marriage. 
+                    We're now proud parents of a healthy baby, thanks to early awareness and proper planning."
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="p-6">
+              <CardContent>
+                <div className="mb-4">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                      <TrendingUp className="text-primary" size={24} />
+                    </div>
+                    <div>
+                      <div className="font-semibold">Dr. Sharma</div>
+                      <div className="text-sm text-muted-foreground">Thalassemia Care Center</div>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground">
+                    "The donor prediction accuracy is incredible. We've reduced waiting times by 70% 
+                    and can now plan treatments more effectively for our patients."
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
+
+      {/* Partner Logos */}
+      <section className="py-12 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h3 className="text-lg font-semibold text-muted-foreground">Trusted by Leading Organizations</h3>
+          </div>
+          <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
+            <div className="bg-white px-6 py-4 rounded-lg shadow-sm">Microsoft Azure</div>
+            <div className="bg-white px-6 py-4 rounded-lg shadow-sm">Blood Warriors</div>
+            <div className="bg-white px-6 py-4 rounded-lg shadow-sm">Blend360 India</div>
+            <div className="bg-white px-6 py-4 rounded-lg shadow-sm">SVP India</div>
+            <div className="bg-white px-6 py-4 rounded-lg shadow-sm">e-RaktKosh</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Newsletter Signup */}
+      <section className="py-16 bg-primary text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
+          <p className="text-xl mb-8 opacity-90">
+            Get latest updates on donor availability and genetic awareness in your area
+          </p>
+          <div className="max-w-md mx-auto flex gap-4">
+            <input 
+              type="email" 
+              placeholder="Enter your email" 
+              className="flex-1 px-4 py-3 rounded-lg text-black"
+            />
+            <Button variant="secondary" size="lg">
+              Subscribe
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-secondary text-secondary-foreground py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Company Info */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Droplets className="w-8 h-8 text-primary" />
+                <span className="text-xl font-bold">HemoGenesis AI</span>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                Revolutionizing thalassemia prevention through AI-powered donor prediction and genetic risk awareness.
+              </p>
+              <div className="flex gap-4">
+                <Button variant="ghost" size="sm">Twitter</Button>
+                <Button variant="ghost" size="sm">LinkedIn</Button>
+                <Button variant="ghost" size="sm">Facebook</Button>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <div className="space-y-2">
+                <Link to="/digital-twin" className="block text-muted-foreground hover:text-primary transition-colors">
+                  Donor Prediction
+                </Link>
+                <Link to="/genetic-risk" className="block text-muted-foreground hover:text-primary transition-colors">
+                  Genetic Risk Assessment
+                </Link>
+                <Link to="/patients-ngos" className="block text-muted-foreground hover:text-primary transition-colors">
+                  For NGOs
+                </Link>
+                <Link to="/about" className="block text-muted-foreground hover:text-primary transition-colors">
+                  About Us
+                </Link>
+              </div>
+            </div>
+
+            {/* Emergency Contacts */}
+            <div>
+              <h4 className="font-semibold mb-4">Emergency Support</h4>
+              <div className="space-y-2 text-muted-foreground">
+                <div>Blood Emergency: <span className="text-destructive font-bold">1800-XXX-XXXX</span></div>
+                <div>Genetic Counseling: <span className="text-primary font-bold">1800-XXX-YYYY</span></div>
+                <div>Technical Support: support@hemogenesis.ai</div>
+                <div>24/7 Available</div>
+              </div>
+            </div>
+
+            {/* App Downloads */}
+            <div>
+              <h4 className="font-semibold mb-4">Get Our App</h4>
+              <div className="space-y-3">
+                <Button variant="outline" className="w-full justify-start">
+                  <span className="mr-2">📱</span> Download for Android
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <span className="mr-2">🍎</span> Download for iOS
+                </Button>
+                <div className="text-sm text-muted-foreground mt-4">
+                  Available in English, Hindi, Telugu, Tamil
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Footer */}
+          <div className="border-t border-muted mt-8 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="text-muted-foreground text-sm">
+                © 2024 HemoGenesis AI. All rights reserved. | Privacy Policy | Terms of Service
+              </div>
+              <div className="text-muted-foreground text-sm mt-4 md:mt-0">
+                Powered by AI, Built with ❤️ for Thalassemia Prevention
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
