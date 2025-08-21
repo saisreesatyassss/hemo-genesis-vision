@@ -13,6 +13,7 @@ const Navigation = () => {
     { name: "Genetic Risk", path: "/genetic-risk" },
     { name: "For Patients & NGOs", path: "/patients-ngos" },
     { name: "Patient Dashboard", path: "/patient-dashboard" },
+    { name: "Blood Match Finder", path: "/blood-match-finder" },
     { name: "About Us", path: "/about" },
     { name: "Contact", path: "/contact" },
   ];
