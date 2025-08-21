@@ -39,8 +39,8 @@ const Navigation = () => {
                 {item.name}
               </Link>
             ))}
-            <Button variant="default" size="sm">
-              Get Started
+            <Button variant="default" size="sm" asChild>
+              <Link to="/login">Login</Link>
             </Button>
           </div>
 
@@ -72,8 +72,8 @@ const Navigation = () => {
                   {item.name}
                 </Link>
               ))}
-              <Button variant="default" size="sm" className="w-fit">
-                Get Started
+              <Button variant="default" size="sm" className="w-fit" asChild>
+                <Link to="/login">Login</Link>
               </Button>
             </div>
           </div>
