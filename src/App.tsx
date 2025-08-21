@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import DigitalTwin from "./pages/DigitalTwin";
 import GeneticRisk from "./pages/GeneticRisk";
 import PatientsNGOs from "./pages/PatientsNGOs";
+import PatientDashboard from "./pages/PatientDashboard";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/digital-twin" element={<DigitalTwin />} />
           <Route path="/genetic-risk" element={<GeneticRisk />} />
           <Route path="/patients-ngos" element={<PatientsNGOs />} />
+          <Route path="/patient-dashboard" element={<PatientDashboard />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
