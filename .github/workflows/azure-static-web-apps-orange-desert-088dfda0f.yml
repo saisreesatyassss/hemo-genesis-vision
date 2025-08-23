@@ -65,10 +65,16 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
 
 jobs:
-  build_and_deploy:
+  build_and_deploy_job:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
+    name: Build and Deploy Job
     steps:
       - uses: actions/checkout@v3
 
@@ -80,9 +86,20 @@ jobs:
       - name: Deploy to Azure Static Web App
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: bace2d01da77b955ee5fa79d2f87e85f456461ff98f01b6cfe5b7ba0b198b59c01-2f52e841-a877-43d9-b001-bc10dec017bc00f0808088dfda0f
           action: "upload"
+          app_location: "/"           # your app source location
+          api_location: ""            # leave blank if no API
+          output_location: "dist"     # React build folder
+          skip_app_build: true        # we already built the app
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - uses: Azure/static-web-apps-deploy@v1
+        with:
+          action: "close"
           app_location: "/"
-          api_location: ""
-          output_location: "dist"
-          skip_app_build: true
+          azure_static_web_apps_api_token: bace2d01da77b955ee5fa79d2f87e85f456461ff98f01b6cfe5b7ba0b198b59c01-2f52e841-a877-43d9-b001-bc10dec017bc00f0808088dfda0f
