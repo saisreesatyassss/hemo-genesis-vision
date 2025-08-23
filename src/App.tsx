@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Home from "./pages/Home";
 import DigitalTwin from "./pages/DigitalTwin";
+import PatientDigitalTwin from "./pages/PatientDigitalTwin";
 import GeneticRisk from "./pages/GeneticRisk";
 import PatientsNGOs from "./pages/PatientsNGOs";
 import PatientDashboard from "./pages/PatientDashboard";
@@ -31,6 +32,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/digital-twin" element={<DigitalTwin />} />
+          <Route path="/patient-twin" element={<PatientDigitalTwin />} />
           <Route path="/genetic-risk" element={<GeneticRisk />} />
           <Route path="/patients-ngos" element={<PatientsNGOs />} />
           <Route path="/patient-dashboard" element={<PatientDashboard />} />
