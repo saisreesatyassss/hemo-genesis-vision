@@ -61,5 +61,5 @@ jobs:
         with:
           app-name: 'HemoGenesisAI'
           slot-name: 'Production'
-          package: .
+          package: ./dist
           
