@@ -164,23 +164,16 @@ const Login = () => {
                 </Button>
               </form>
               
-              <div className="relative">
+              {/* <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <Separator className="w-full" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-white px-2 text-muted-foreground font-medium">Or continue with</span>
                 </div>
-              </div>
+              </div> */}
               
-              <Button
-                variant="outline"
-                className="w-full h-12 rounded-xl border-2 border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 transform hover:-translate-y-0.5"
-                type="button"
-              >
-                <Chrome className="mr-2 h-5 w-5" />
-                Continue with Google
-              </Button>
+              
               
               <div className="text-center text-sm">
                 <span className="text-muted-foreground">Don't have an account? </span>
