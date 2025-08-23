@@ -26,7 +26,7 @@ const [error, setError] = useState("");
 
     try {
       const response = await fetch(
-        "https://hemo-genesis-ai-backend.vercel.app/api/auth/login",
+        "https://hemobackned.azurewebsites.net/api/auth/login",
         {
           method: "POST",
           headers: {

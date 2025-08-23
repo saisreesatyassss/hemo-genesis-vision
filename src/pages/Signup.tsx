@@ -38,7 +38,7 @@ const Signup = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post("https://hemo-genesis-ai-backend.vercel.app/api/auth/register", payload);
+      const res = await axios.post("https://hemobackned.azurewebsites.net/api/auth/register", payload);
       console.log("Registration success:", res.data);
       alert("Registration successful!");
                       navigate("/dashboard");
