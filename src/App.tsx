@@ -14,6 +14,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import MultiStepSignup from "./pages/MultiStepSignup";
 import EmergencySOS from "./pages/EmergencySOS";
 import NotFound from "./pages/NotFound";
 
@@ -37,7 +38,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          <Route path="/signup" element={<MultiStepSignup />} />
           <Route path="/emergency-sos" element={<EmergencySOS />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
