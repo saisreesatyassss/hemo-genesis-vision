@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,9 +8,49 @@ import { Separator } from "@/components/ui/separator";
 import { Heart, Droplets, Users, Shield, Mail, Lock, Chrome, UserPlus, HeartHandshake } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import axios from "axios"; // make sure to install axios: npm i axios
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
   const [userType, setUserType] = useState<string>("patient");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    const payload = {
+      firstName,
+      lastName,
+      email,
+      password,
+      role: userType.charAt(0).toUpperCase() + userType.slice(1), // "Patient" or "Donor"
+    };
+
+    try {
+      setLoading(true);
+      const res = await axios.post("https://hemo-genesis-ai-backend.vercel.app/api/auth/register", payload);
+      console.log("Registration success:", res.data);
+      alert("Registration successful!");
+                      navigate("/dashboard");
+
+      // optionally redirect to login page
+    } catch (err: any) {
+      console.error(err.response?.data || err.message);
+      alert("Registration failed: " + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 flex items-center justify-center p-4">
@@ -122,7 +163,7 @@ const Signup = () => {
             </CardHeader>
             
             <CardContent className="relative space-y-6 px-8 pb-8">
-              <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+                <form className="space-y-5" onSubmit={handleSubmit}>
                 
                 {/* User Type Selection */}
                 <div className="space-y-3">
@@ -150,7 +191,9 @@ const Signup = () => {
                     <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
                     <Input
                       id="firstName"
-                      placeholder="John"
+                      placeholder="sai"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
                       className="h-11 rounded-xl border-2 border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-300 bg-white/50"
                     />
                   </div>
@@ -158,7 +201,9 @@ const Signup = () => {
                     <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
                     <Input
                       id="lastName"
-                      placeholder="Doe"
+                      placeholder="sree"        value={lastName}
+        onChange={(e) => setLastName(e.target.value)}
+
                       className="h-11 rounded-xl border-2 border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-300 bg-white/50"
                     />
                   </div>
@@ -171,7 +216,8 @@ const Signup = () => {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder="Enter your email"      value={email}
+        onChange={(e) => setEmail(e.target.value)}
                       className="pl-10 h-12 rounded-xl border-2 border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-300 bg-white/50"
                     />
                   </div>
@@ -184,7 +230,8 @@ const Signup = () => {
                     <Input
                       id="password"
                       type="password"
-                      placeholder="Create a strong password"
+                      placeholder="Create a strong password"        value={password}
+        onChange={(e) => setPassword(e.target.value)}
                       className="pl-10 h-12 rounded-xl border-2 border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-300 bg-white/50"
                     />
                   </div>
@@ -197,7 +244,8 @@ const Signup = () => {
                     <Input
                       id="confirmPassword"
                       type="password"
-                      placeholder="Confirm your password"
+                      placeholder="Confirm your password"        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
                       className="pl-10 h-12 rounded-xl border-2 border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-300 bg-white/50"
                     />
                   </div>
@@ -217,9 +265,10 @@ const Signup = () => {
                   </span>
                 </div>
                 
-                <Button 
+                <Button
                   className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-                  type="submit"
+                  type="submit" // important: triggers form submission
+                  disabled={loading} // optional: disables while backend request is in progress
                 >
                   {userType === "donor" ? "Join as Donor" : "Join as Patient"}
                   {userType === "donor" ? (
@@ -228,26 +277,12 @@ const Signup = () => {
                     <Heart className="ml-2 h-4 w-4" />
                   )}
                 </Button>
+
               </form>
               
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator className="w-full" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-muted-foreground font-medium">Or continue with</span>
-                </div>
-              </div>
+ 
               
-              <Button
-                variant="outline"
-                className="w-full h-12 rounded-xl border-2 border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 transform hover:-translate-y-0.5"
-                type="button"
-              >
-                <Chrome className="mr-2 h-5 w-5" />
-                Continue with Google
-              </Button>
-              
+ 
               <div className="text-center text-sm">
                 <span className="text-muted-foreground">Already have an account? </span>
                 <Link to="/login" className="text-primary hover:text-primary/80 font-medium transition-colors">
