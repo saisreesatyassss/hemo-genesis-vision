@@ -43,6 +43,7 @@ const App = () => (
           <Route path="/signup" element={<MultiStepSignup />} />
           <Route path="/emergency-sos" element={<EmergencySOS />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
