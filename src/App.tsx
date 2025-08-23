@@ -40,7 +40,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/signup1" element={<MultiStepSignup />} />
+          <Route path="/complete-profile" element={<MultiStepSignup />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/emergency-sos" element={<EmergencySOS />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Cookies from "js-cookie";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -42,6 +43,11 @@ const [error, setError] = useState("");
         setError(data.message || "Login failed");
       } else {
         // Save token or user info
+        
+                Cookies.remove("userId");
+              Cookies.remove("token");
+              Cookies.set("userId", data.user.id, { expires: 7 }); // expires in 7 days
+              Cookies.set("token", data.token, { expires: 7 });      
         localStorage.setItem("token", data.token);
         alert("Login successful!");
         // Navigate to dashboard or next page

@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios"; // make sure to install axios: npm i axios
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 const Signup = () => {
   const [userType, setUserType] = useState<string>("patient");
@@ -38,10 +39,19 @@ const Signup = () => {
 
     try {
       setLoading(true);
+            // Remove old cookies
+
+
       const res = await axios.post("https://hemobackned.azurewebsites.net/api/auth/register", payload);
       console.log("Registration success:", res.data);
+  // Store user ID and token in cookies
+
+        Cookies.remove("userId");
+      Cookies.remove("token");
+      Cookies.set("userId", res.data.user.id, { expires: 7 }); // expires in 7 days
+      Cookies.set("token", res.data.token, { expires: 7 });      
       alert("Registration successful!");
-                      navigate("/dashboard");
+      navigate("/complete-profile");
 
       // optionally redirect to login page
     } catch (err: any) {

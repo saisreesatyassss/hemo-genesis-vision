@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Heart, Phone, MapPin, Droplet, User } from 'lucide-react';
+import Cookies from "js-cookie";
 
 const PatientProfileForm = () => {
   const [formData, setFormData] = useState({
@@ -29,8 +30,12 @@ const PatientProfileForm = () => {
     setIsSubmitting(true);
     
     try {
+          // get user ID from cookies
+    const userId = Cookies.get("userId");
+    if (!userId) throw new Error("User not logged in!");
+
       // Replace with your actual API endpoint
-      const response = await fetch('https://hemo-genesis-ai-backend.vercel.app/api/auth/68a98a075fd56a873937c2ff', {
+      const response = await fetch(`https://hemo-genesis-ai-backend.vercel.app/api/auth/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
