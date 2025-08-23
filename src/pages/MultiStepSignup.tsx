@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Heart, Phone, MapPin, Droplet, User } from 'lucide-react';
 import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 
 const PatientProfileForm = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ const PatientProfileForm = () => {
 
   const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   const genders = ['Male', 'Female', 'Other'];
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,22 +32,87 @@ const PatientProfileForm = () => {
     setIsSubmitting(true);
     
     try {
+
           // get user ID from cookies
     const userId = Cookies.get("userId");
     if (!userId) throw new Error("User not logged in!");
-
+      console.log('Submitting:', userId);
+      // alert(JSON.stringify(userId));
       // Replace with your actual API endpoint
+      // const response = await fetch(`https://hemo-genesis-ai-backend.vercel.app/api/auth/${userId}`, {
+      //   method: 'PUT',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({ generalInfo: formData }),
+      // });
       const response = await fetch(`https://hemo-genesis-ai-backend.vercel.app/api/auth/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ generalInfo: formData }),
+        body: JSON.stringify({
+          generalInfo: formData,
+          patientInfo: {
+            condition: "Thalassemia",
+            transfusionFrequency: "Monthly",
+            lastTransfusionDate: "2025-08-01",
+            expectedNextTransfusionDate: "2025-09-01",
+            hospital: "Apollo Hospital",
+            emergencyContact: {
+              name: "sai srikanth",
+              phone: "+91-9123456789"
+            }
+          },
+          donorInfo: {
+            lastDonationDate: "2025-07-01",
+            nextEligibleDate: "2025-10-01",
+            registrationDate: "2024-01-01",
+            lastContactedDate: "2025-08-10",
+            donorType: "Regular",
+            willingToDonate: true,
+            preferredDonationCenter: "Red Cross Center",
+            availabilityWindow: "Weekdays",
+            medicalRestrictions: false,
+            quantityRequired: 500,
+            donationsTillDate: 10,
+            cycleOfDonations: 3,
+            totalCalls: 5,
+            frequencyInDays: 30
+          },
+          coupleInfo: {
+            partnerName: "bangaram",
+            partnerAge: 28,
+            partnerBloodGroup: "O+",
+            carrierStatusSelf: "Yes",
+            carrierStatusPartner: "No"
+          },
+          aiTracker: {
+            predictedNextDonationDate: "2025-09-05",
+            bridgeGender: "Female",
+            bridgeBloodGroup: "O+",
+            roleStatus: true,
+            bridgeStatus: true,
+            statusOfBridge: true,
+            userDonationActiveStatus: "active",
+            status: "active",
+            latitude: 17.385,
+            longitude: 78.4867
+          },
+          badges: ["Top Donor", "Health Tracker"],
+          streakCount: 5
+        }),
       });
+
       
       const data = await response.json();
+      
       console.log('✅ Submitted:', data);
+
       alert('Profile saved successfully!');
+
+      navigate("/profile");
+
     } catch (error) {
       console.error('Error:', error);
       alert('Failed to save profile. Please try again.');

@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import Cookies from "js-cookie";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -17,6 +19,14 @@ const Navigation = () => {
     { name: "About Us", path: "/about" },
     { name: "Contact", path: "/contact" },
   ];
+
+  const userId = Cookies.get("userId");
+
+  const handleLogout = () => {
+    Cookies.remove("userId");
+    Cookies.remove("token");
+    navigate("/login");
+  };
 
   return (
     <nav className="bg-background/95 backdrop-blur-sm border-b sticky top-0 z-50">
@@ -41,9 +51,25 @@ const Navigation = () => {
                 {item.name}
               </Link>
             ))}
-            <Button variant="default" size="sm" asChild>
-              <Link to="/login">Login</Link>
-            </Button>
+
+            {userId ? (
+              <>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => navigate("/profile")}
+                >
+                  Profile
+                </Button>
+                <Button variant="destructive" size="sm" onClick={handleLogout}>
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Button variant="default" size="sm" asChild>
+                <Link to="/login">Login</Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile Navigation Button */}
@@ -74,9 +100,35 @@ const Navigation = () => {
                   {item.name}
                 </Link>
               ))}
-              <Button variant="default" size="sm" className="w-fit" asChild>
-                <Link to="/login">Login</Link>
-              </Button>
+
+              {userId ? (
+                <>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate("/profile");
+                    }}
+                  >
+                    Profile
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      setIsOpen(false);
+                      handleLogout();
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <Button variant="default" size="sm" className="w-fit" asChild>
+                  <Link to="/login">Login</Link>
+                </Button>
+              )}
             </div>
           </div>
         )}

@@ -18,6 +18,7 @@ import Signup from "./pages/Signup";
 import MultiStepSignup from "./pages/MultiStepSignup";
 import EmergencySOS from "./pages/EmergencySOS";
 import NotFound from "./pages/NotFound";
+import BloodProfileDashboard from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/complete-profile" element={<MultiStepSignup />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/profile" element={<BloodProfileDashboard />} />
           <Route path="/emergency-sos" element={<EmergencySOS />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
 

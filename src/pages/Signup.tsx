@@ -22,8 +22,10 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Password match validation
     if (password !== confirmPassword) {
       alert("Passwords do not match");
       return;
@@ -39,28 +41,37 @@ const Signup = () => {
 
     try {
       setLoading(true);
-            // Remove old cookies
 
-
-      const res = await axios.post("https://hemobackned.azurewebsites.net/api/auth/register", payload);
-      console.log("Registration success:", res.data);
-  // Store user ID and token in cookies
-
-        Cookies.remove("userId");
+      // Remove old cookies
+      Cookies.remove("userId");
       Cookies.remove("token");
-      Cookies.set("userId", res.data.user.id, { expires: 7 }); // expires in 7 days
-      Cookies.set("token", res.data.token, { expires: 7 });      
-      alert("Registration successful!");
-      navigate("/complete-profile");
 
-      // optionally redirect to login page
+      // Make API call
+      const res = await axios.post(
+        "https://hemobackned.azurewebsites.net/api/auth/register",
+        payload
+      );
+
+      console.log("Registration success:", res.data);
+      console.log(res.data.user.id);
+      console.log(res.data.user.token);
+
+      // Store user ID and token in cookies
+      Cookies.set("userId", res.data.user.id, { expires: 7 });
+      Cookies.set("token", res.data.token, { expires: 7 });
+
+      alert("Registration successful!");
+      navigate("/complete-profile"); // Redirect to complete profile
     } catch (err: any) {
       console.error(err.response?.data || err.message);
-      alert("Registration failed: " + (err.response?.data?.message || err.message));
+      alert(
+        "Registration failed: " + (err.response?.data?.message || err.message)
+      );
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 flex items-center justify-center p-4">

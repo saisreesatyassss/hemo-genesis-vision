@@ -43,12 +43,18 @@ const [error, setError] = useState("");
         setError(data.message || "Login failed");
       } else {
         // Save token or user info
-        
+        console.log(data.user.id);
+console.log(data.user.id);
+console.log(data);
+
+
                 Cookies.remove("userId");
               Cookies.remove("token");
               Cookies.set("userId", data.user.id, { expires: 7 }); // expires in 7 days
-              Cookies.set("token", data.token, { expires: 7 });      
+              Cookies.set("token", data.token, { expires: 7 });    
+                
         localStorage.setItem("token", data.token);
+        
         alert("Login successful!");
         // Navigate to dashboard or next page
                 navigate("/");
