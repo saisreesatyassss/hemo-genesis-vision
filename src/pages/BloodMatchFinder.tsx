@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, Heart, Phone, MapPin, Calendar, Activity, Users, Badge, AlertCircle } from 'lucide-react';
 import { AIProjectClient } from "@azure/ai-projects";
@@ -209,43 +210,72 @@ const BloodMatchFinder: React.FC = () => {
 
 const callAzureAIAgent = async (userMessage: string): Promise<string> => {
   try {
-    // You will need to set these environment variables or replace the values directly
-    const endpoint = process.env["AZURE_OPENAI_ENDPOINT"] || "https://padal-meooqw75-eastus2.openai.azure.com/";
-    const apiKey = process.env["AZURE_OPENAI_API_KEY"] || "<REPLACE_WITH_YOUR_KEY_VALUE_HERE>";
-    const apiVersion = "2025-01-01-preview";
-    const deployment = "gpt-5-mini-2"; // This must match your deployment name
+    // Azure OpenAI configuration - hardcoded values
 
-    // Initialize the Azure OpenAI client
-    const client = new AzureOpenAI({ endpoint, apiKey, apiVersion, deployment });
 
-    // Make the chat completion request
-   const result = await client.chat.completions.create({
-      // ----------------------------------------------------
-      // Add this line to fix the error
-      model: deployment, 
-      // ----------------------------------------------------
-      messages: [
-        { role: "system", content: "You are a helpful and human-like AI assistant." },
-        { role: "user", content: userMessage }
-      ],
-      max_completion_tokens: 16384 
+     const endpoint = process.env.NEXT_PUBLIC_AZURE_OPENAI_ENDPOINT!;
+    const apiKey = process.env.NEXT_PUBLIC_AZURE_OPENAI_API_KEY!;
+    const apiVersion = process.env.NEXT_PUBLIC_AZURE_OPENAI_API_VERSION!;
+    const deployment = process.env.NEXT_PUBLIC_AZURE_OPENAI_DEPLOYMENT!;
+    // Initialize Azure OpenAI client
+    const client = new AzureOpenAI({
+      endpoint,
+      apiKey,
+      apiVersion,
+      deployment,
+dangerouslyAllowBrowser: true // Note: Use with caution in production
     });
 
-    // Check if the response is valid and return the content
-    if (result.choices && result.choices.length > 0 && result.choices[0].message) {
-      return result.choices[0].message.content || "I couldn't generate a response.";
+    // Validate input
+    if (!userMessage || userMessage.trim().length === 0) {
+      throw new Error("User message is required and cannot be empty");
     }
 
-    // Fallback message if no valid response is received
-    return "I apologize, but I couldn't generate a response. Please try again.";
+    // Prepare request options (without temperature for gpt-5-mini compatibility)
+    const requestOptions = {
+ model: "gpt-5-mini-2",
+      messages: [
+        {
+          role: "system" as const,
+          content: "You are an AI assistant that helps people find information."
+        },
+        {
+          role: "user" as const,
+          content: userMessage.trim()
+        }
+      ],
+      max_completion_tokens: 16384
+    };
+
+    // Call Azure OpenAI API
+    const result = await client.chat.completions.create(requestOptions);
+
+    // Extract and return the response
+    const response = result.choices[0]?.message?.content;
     
-  } catch (error) {
-    console.error('AI Agent Error:', error);
-    return "I'm experiencing some technical difficulties connecting to the AI assistant. Please try again in a moment. In the meantime, you can contact your healthcare provider for immediate assistance.";
+    if (!response) {
+      throw new Error("No response generated from Azure OpenAI");
+    }
+
+    return response;
+
+  } catch (error: any) {
+    // Enhanced error handling
+    if (error.status) {
+      throw new Error(`Azure OpenAI API Error (${error.status}): ${error.message || 'Unknown API error'}`);
+    }
+    
+    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+      throw new Error('Network error: Unable to connect to Azure OpenAI service');
+    }
+    
+    if (error.message) {
+      throw new Error(`Azure OpenAI Error: ${error.message}`);
+    }
+    
+    throw new Error('Unknown error occurred while calling Azure OpenAI');
   }
 };
-
-
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
