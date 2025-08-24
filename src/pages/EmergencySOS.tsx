@@ -17,11 +17,13 @@ import {
   Car,
   UserCheck
 } from 'lucide-react';
+import Cookies from "js-cookie";
 
 const EmergencySOS = () => {
   const [isEmergencyActive, setIsEmergencyActive] = useState(false);
-  const [statusUpdates, setStatusUpdates] = useState<Array<{id: number, message: string, time: string, type: 'info' | 'success' | 'warning'}>>([]);
-  
+    const [statusUpdates, setStatusUpdates] = useState([]);
+    // This is the function called when the user confirms the emergency request.
+
   const mockDonors = [
     {
       id: 1,
@@ -69,23 +71,127 @@ const EmergencySOS = () => {
     }
   ];
 
-  const handleEmergencyRequest = () => {
-    setIsEmergencyActive(true);
-    
-    // Simulate status updates
-    const updates = [
-      { id: 1, message: 'Emergency request sent to 12 verified donors nearby...', time: 'Now', type: 'info' as const },
-      { id: 2, message: 'Dr. Sarah Chen accepted your request', time: '2 min ago', type: 'success' as const },
-      { id: 3, message: 'Ahmed Hassan is on the way (ETA: 8 minutes)', time: '5 min ago', type: 'success' as const },
-      { id: 4, message: 'Backup donor Maria Rodriguez is on standby', time: '7 min ago', type: 'info' as const }
-    ];
-    
-    updates.forEach((update, index) => {
-      setTimeout(() => {
-        setStatusUpdates(prev => [...prev, update]);
-      }, index * 3000);
-    });
-  };
+    const handleEmergencyRequest = async () => {
+        // Close the dialog and set the emergency state to active
+//        setIsDialogOpen(false);
+        setIsEmergencyActive(true);
+
+        const userId = Cookies.get("userId");
+        if (!userId) {
+            console.error("User not logged in! Please log in to make an emergency request.");
+            // You might want to redirect to the login page here
+            return;
+        }
+
+        console.log('Submitting emergency request for userId:', userId);
+
+        try {
+            // First, call the initial SOS endpoint to notify donors
+            const sosEndpoint = `https://hemobackned.azurewebsites.net/api/auth/${userId}/sos`;
+            const response = await fetch(sosEndpoint, {
+                method: 'POST', // Assuming this is a POST request
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                // Add any necessary body data here, e.g., user's location
+                // body: JSON.stringify({ latitude: ..., longitude: ... })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to send SOS request: ${response.statusText}`);
+            }
+
+            console.log('Emergency request sent successfully.');
+            
+            // Add an initial message to the status updates
+            setStatusUpdates([{
+                id: Date.now(),
+                message: 'Emergency request sent. Notifying verified donors nearby...',
+                time: 'Now',
+                type: 'info'
+            }]);
+
+        } catch (error) {
+            console.error('Error sending emergency request:', error);
+            setStatusUpdates(prev => [...prev, {
+                id: Date.now(),
+                message: 'Failed to send emergency request. Please try again.',
+                time: 'Now',
+                type: 'error'
+            }]);
+            setIsEmergencyActive(false); // Deactivate if the initial request fails
+        }
+    };
+
+    // Use a useEffect hook to manage the polling logic
+    useEffect(() => {
+        let pollingInterval = null;
+
+        if (isEmergencyActive) {
+            const userId = Cookies.get("userId");
+            if (!userId) {
+                console.error("User not logged in, cannot poll for responses.");
+                setIsEmergencyActive(false); // Stop if no userId is found
+                return;
+            }
+
+            // Start polling for responses every 3 seconds
+            pollingInterval = setInterval(async () => {
+                try {
+                    const responsesEndpoint = `https://hemobackned.azurewebsites.net/api/auth/sos/responses/${userId}`;
+                    const response = await fetch(responsesEndpoint);
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch responses: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.responses && data.responses.length > 0) {
+                        // Check for new responses that are not already in our state
+                        data.responses.forEach(res => {
+                            if (!statusUpdates.some(update => update.id === res._id)) {
+                                let message;
+                                let type;
+                                if (res.response.startsWith('accept')) {
+                                    const timeMatch = res.response.match(/coming(\d+)min/);
+                                    const eta = timeMatch ? `(ETA: ${timeMatch[1]} minutes)` : '';
+                                    message = `A donor accepted your request and is on the way ${eta}.`;
+                                    type = 'success';
+                                } else if (res.response.startsWith('reject')) {
+                                    message = 'A donor was unable to help at this time.';
+                                    type = 'info';
+                                } else {
+                                    message = `New response received: ${res.response}`;
+                                    type = 'info';
+                                }
+
+                                setStatusUpdates(prev => [...prev, {
+                                    id: res._id,
+                                    message: message,
+                                    time: 'Just now', // You can refine this logic
+                                    type: type
+                                }]);
+                            }
+                        });
+                    }
+
+                } catch (error) {
+                    console.error("Error fetching SOS responses:", error);
+                    // You might want to handle this more gracefully
+                }
+            }, 3000); // Poll every 3 seconds
+        }
+
+        // Cleanup function to clear the interval when the component unmounts
+        // or when isEmergencyActive becomes false
+        return () => {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+        };
+    }, [isEmergencyActive, statusUpdates]); // Dependencies of the effect
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
@@ -172,7 +278,7 @@ const EmergencySOS = () => {
             </CardContent>
           </Card>
         </div>
-
+            
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Available Donors */}
           <Card className="shadow-lg">
@@ -182,70 +288,37 @@ const EmergencySOS = () => {
                 <span>Available Donors Nearby</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {mockDonors.map((donor, index) => (
-                <div
-                  key={donor.id}
-                  className={`p-4 rounded-lg border transition-all duration-300 animate-slide-up ${
-                    donor.isRecommended 
-                      ? 'border-success/30 bg-success/5' 
-                      : 'border-border bg-card'
-                  }`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <div className="flex items-start space-x-4">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={donor.photo} alt={donor.name} />
-                      <AvatarFallback>{donor.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-semibold">{donor.name}</h3>
-                          {donor.isRecommended && (
-                            <Badge className="bg-success text-success-foreground">
-                              <Star size={12} className="mr-1" />
-                              AI Recommended
-                            </Badge>
-                          )}
-                        </div>
-                        <Badge variant="outline" className="font-mono">
-                          {donor.bloodType}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <div className="flex items-center space-x-1">
-                          <MapPin size={14} />
-                          <span>{donor.distance}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Clock size={14} />
-                          <span>{donor.responseTime}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="text-xs text-muted-foreground">
-                          {donor.verificationLevel} • Last: {donor.lastDonation}
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Phone size={14} className="mr-1" />
-                            Call
-                          </Button>
-                          <Button size="sm" className="bg-primary">
-                            <Send size={14} className="mr-1" />
-                            Request
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
+        {isEmergencyActive && (
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <Card className="shadow-lg">
+      <CardHeader>
+        <CardTitle className="flex items-center space-x-2">
+          <span>🚨 Emergency Status</span>
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        {statusUpdates.map((update, index) => (
+          <div
+            key={update.id}
+            className={`p-4 rounded-lg border transition-all duration-300 animate-slide-up ${
+              update.type === "success"
+                ? "border-green-300 bg-green-50 text-green-800"
+                : update.type === "info"
+                ? "border-blue-300 bg-blue-50 text-blue-800"
+                : "border-red-300 bg-red-50 text-red-800"
+            }`}
+            style={{ animationDelay: `${index * 0.1}s` }}
+          >
+            <p className="text-sm font-medium">{update.message}</p>
+            <p className="text-xs mt-1 opacity-75">{update.time}</p>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  </div>
+)}
+
           </Card>
 
           {/* Live Status Feed */}

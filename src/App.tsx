@@ -19,9 +19,11 @@ import MultiStepSignup from "./pages/MultiStepSignup";
 import EmergencySOS from "./pages/EmergencySOS";
 import NotFound from "./pages/NotFound";
 import BloodProfileDashboard from "./pages/Profile";
+import ThalassemiaAIAvatar from "./pages/chating";
+import Modern3DAIAvatar from "./pages/chating2";
+import ActivityLogger from "./pages/ActivityLogger";
 
 const queryClient = new QueryClient();
-
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -32,8 +34,8 @@ const App = () => (
         <Navigation />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/digital-twin" element={<DigitalTwin />} />
-          <Route path="/patient-twin" element={<PatientDigitalTwin />} />
+          <Route path="/digital-twin" element={<PatientDigitalTwin />} />
+          <Route path="/patient-twin" element={<DigitalTwin />} />
           <Route path="/genetic-risk" element={<GeneticRisk />} />
           <Route path="/patients-ngos" element={<PatientsNGOs />} />
           <Route path="/patient-dashboard" element={<PatientDashboard />} />
@@ -45,10 +47,13 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile" element={<BloodProfileDashboard />} />
           <Route path="/emergency-sos" element={<EmergencySOS />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-
+          <Route path="/ThalassemiaAIAvatar" element={<ThalassemiaAIAvatar />} />
+          <Route path="/Modern3DAIAvatar" element={<Modern3DAIAvatar />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+
+        {/* Always visible floating Activity Logger button */}
+        <ActivityLogger />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

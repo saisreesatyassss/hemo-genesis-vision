@@ -16,8 +16,8 @@ const Navigation = () => {
     { name: "For Patients & NGOs", path: "/patients-ngos" },
     { name: "Patient Dashboard", path: "/patient-dashboard" },
     { name: "Blood Match Finder", path: "/blood-match-finder" },
-    { name: "About Us", path: "/about" },
-    { name: "Contact", path: "/contact" },
+    { name: "Send Emergency", path: "/emergency-sos" },
+    { name: "AIAvatar", path: "/Modern3DAIAvatar" },
   ];
 
   const userId = Cookies.get("userId");

@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Star
 } from 'lucide-react';
+import Cookies from "js-cookie";
 
 const BloodProfileDashboard = () => {
   const [userData, setUserData] = useState(null);
@@ -39,8 +40,11 @@ const BloodProfileDashboard = () => {
     const fetchUserData = async () => {
       try {
         // Get userId from cookies (you'll need to add js-cookie)
-        const userId = "68aa0601be394aab95787939"; // Replace with: Cookies.get("userId");
-        
+const userId = Cookies.get("userId");
+        if (!userId) {
+  // Handle the case where the user is not logged in
+  console.error("User ID cookie not found.");
+}
         const response = await fetch(`https://hemo-genesis-ai-backend.vercel.app/api/auth/${userId}`, {
           method: 'GET',
           headers: {
