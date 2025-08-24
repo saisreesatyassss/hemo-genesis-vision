@@ -1,7 +1,7 @@
 // import React, { useState, useRef, useEffect } from 'react';
 // import { Send, Heart, Activity, User, Bot } from 'lucide-react';
 
-// const ThalassemiaAIAvatar = () => {
+// const ThalassemiaAIchat = () => {
 //   const [messages, setMessages] = useState([
 //     {
 //       id: 1,
@@ -295,12 +295,12 @@
 //   );
 // };
 
-// export default ThalassemiaAIAvatar;
+// export default ThalassemiaAIchat;
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Heart, Activity, User, Bot } from 'lucide-react';
 
-const ThalassemiaAIAvatar = () => {
+const ThalassemiaAIchat = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -594,4 +594,4 @@ const ThalassemiaAIAvatar = () => {
   );
 };
 
-export default ThalassemiaAIAvatar;
+export default ThalassemiaAIchat;

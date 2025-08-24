@@ -19,7 +19,7 @@ import MultiStepSignup from "./pages/MultiStepSignup";
 import EmergencySOS from "./pages/EmergencySOS";
 import NotFound from "./pages/NotFound";
 import BloodProfileDashboard from "./pages/Profile";
-import ThalassemiaAIAvatar from "./pages/chating";
+import ThalassemiaAIchat from "./pages/chating";
 import Modern3DAIAvatar from "./pages/chating2";
 import ActivityLogger from "./pages/ActivityLogger";
 
@@ -47,7 +47,7 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile" element={<BloodProfileDashboard />} />
           <Route path="/emergency-sos" element={<EmergencySOS />} />
-          <Route path="/ThalassemiaAIAvatar" element={<ThalassemiaAIAvatar />} />
+          <Route path="/ThalassemiaAIchat" element={<ThalassemiaAIchat />} />
           <Route path="/Modern3DAIAvatar" element={<Modern3DAIAvatar />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

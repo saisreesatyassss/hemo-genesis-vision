@@ -1,426 +1,544 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, Phone, MessageCircle, Zap, Clock, Star, Shield, AlertTriangle, Navigation, Filter } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { Send, Bot, User, Heart, Phone, MapPin, Calendar, Activity, Users, Badge, AlertCircle } from 'lucide-react';
+import { AIProjectClient } from "@azure/ai-projects";
+import { DefaultAzureCredential } from "@azure/identity";
+import { InteractiveBrowserCredential } from "@azure/identity";
+import { AzureOpenAI } from "openai";
 
-const BloodMatchFinder = () => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState('');
-  const [mapInitialized, setMapInitialized] = useState(false);
-  const [emergencyMode, setEmergencyMode] = useState(false);
-  const [selectedBloodType, setSelectedBloodType] = useState('A+');
-  const [searchRadius, setSearchRadius] = useState(5);
+import Cookies from "js-cookie";
 
-  const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-
-  const nearbyDonors = [
-    {
-      id: 1,
-      name: 'Alex Johnson',
-      bloodType: 'A+',
-      distance: 0.8,
-      lastDonation: '2 months ago',
-      aiConfidence: 98,
-      matchScore: 95,
-      availability: 'Available Now',
-      verified: true,
-      emergencyDonor: true,
-      location: { lat: 40.7128, lng: -74.0060 },
-      phone: '+1 (555) 123-4567',
-      notes: 'Frequent donor, excellent health records'
-    },
-    {
-      id: 2,
-      name: 'Maria Garcia',
-      bloodType: 'A+',
-      distance: 1.2,
-      lastDonation: '6 weeks ago',
-      aiConfidence: 94,
-      matchScore: 92,
-      availability: 'Available Today',
-      verified: true,
-      emergencyDonor: false,
-      location: { lat: 40.7580, lng: -73.9855 },
-      phone: '+1 (555) 987-6543',
-      notes: 'Regular donor, excellent compatibility history'
-    },
-    {
-      id: 3,
-      name: 'David Chen',
-      bloodType: 'A+',
-      distance: 2.1,
-      lastDonation: '1 month ago',
-      aiConfidence: 89,
-      matchScore: 88,
-      availability: 'Available Tomorrow',
-      verified: true,
-      emergencyDonor: true,
-      location: { lat: 40.7834, lng: -73.9662 },
-      phone: '+1 (555) 456-7890',
-      notes: 'Healthcare professional, fast response time'
-    },
-    {
-      id: 4,
-      name: 'Sarah Williams',
-      bloodType: 'A+',
-      distance: 3.5,
-      lastDonation: '3 weeks ago',
-      aiConfidence: 85,
-      matchScore: 82,
-      availability: 'Available This Week',
-      verified: true,
-      emergencyDonor: false,
-      location: { lat: 40.6892, lng: -74.0445 },
-      phone: '+1 (555) 321-0987',
-      notes: 'Young donor, excellent health profile'
-    }
-  ];
-
-  const initializeMap = () => {
-    if (!mapContainer.current || !mapboxToken) return;
-
-    mapboxgl.accessToken = mapboxToken;
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: [-74.0060, 40.7128], // NYC
-      zoom: 12,
-    });
-
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-    // Add markers for donors
-    nearbyDonors.forEach((donor) => {
-      const el = document.createElement('div');
-      el.className = `w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold cursor-pointer transition-all hover:scale-110 ${
-        donor.emergencyDonor 
-          ? 'bg-primary text-primary-foreground border-primary shadow-glow' 
-          : 'bg-card text-card-foreground border-primary/50'
-      }`;
-      el.innerHTML = donor.bloodType;
-      
-      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-        <div class="p-3">
-          <h3 class="font-bold text-sm">${donor.name}</h3>
-          <p class="text-xs text-gray-600">${donor.distance} miles away</p>
-          <p class="text-xs text-gray-600">${donor.availability}</p>
-          <div class="mt-2">
-            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-              ${donor.aiConfidence}% Match
-            </span>
-          </div>
-        </div>
-      `);
-
-      new mapboxgl.Marker(el)
-        .setLngLat([donor.location.lng, donor.location.lat])
-        .setPopup(popup)
-        .addTo(map.current!);
-    });
-
-    setMapInitialized(true);
+interface UserData {
+  success: boolean;
+  user: {
+    generalInfo: {
+      phoneNumber: string;
+      dateOfBirth: string;
+      gender: string;
+      bloodGroup: string;
+      stateOfResidence: string;
+      city: string;
+    };
+    patientInfo: {
+      emergencyContact: {
+        name: string;
+        phone: string;
+      };
+      condition: string;
+      transfusionFrequency: string;
+      lastTransfusionDate: string;
+      expectedNextTransfusionDate: string;
+      hospital: string;
+    };
+    donorInfo: {
+      lastDonationDate: string;
+      nextEligibleDate: string;
+      registrationDate: string;
+      lastContactedDate: string;
+      donorType: string;
+      willingToDonate: boolean;
+      preferredDonationCenter: string;
+      availabilityWindow: string;
+      medicalRestrictions: boolean;
+      quantityRequired: number;
+      donationsTillDate: number;
+      cycleOfDonations: number;
+      totalCalls: number;
+      frequencyInDays: number;
+    };
+    coupleInfo: {
+      partnerName: string;
+      partnerAge: number;
+      partnerBloodGroup: string;
+      carrierStatusSelf: string;
+      carrierStatusPartner: string;
+    };
+    aiTracker: {
+      predictedNextDonationDate: string;
+      bridgeGender: string;
+      bridgeBloodGroup: string;
+      roleStatus: boolean;
+      bridgeStatus: boolean;
+      statusOfBridge: boolean;
+      userDonationActiveStatus: string;
+      status: string;
+      latitude: number;
+      longitude: number;
+    };
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+    badges: string[];
+    streakCount: number;
+    hasSOS: boolean;
   };
+}
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
+interface DonorData {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  donors: Array<{
+    _id: string;
+    role: string;
+    blood_group: string;
+    gender: string;
+    latitude: number;
+    longitude: number;
+    donor_type: string;
+    donations_till_date: number;
+    eligibility_status: string;
+    status: string;
+    days_since_last_donation: number;
+    days_until_next_eligible: number;
+  }>;
+}
+
+const BloodMatchFinder: React.FC = () => {
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [donorData, setDonorData] = useState<DonorData | null>(null);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: 'assistant',
+      content: 'Hello! I\'m your AI Blood Match Assistant. I can help you find compatible donors, answer questions about blood donation, and provide personalized recommendations based on your profile. How can I assist you today?',
+      timestamp: new Date()
+    }
+  ]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (mapboxToken && !mapInitialized) {
-      initializeMap();
+    const fetchUserData = async () => {
+      try {
+              const userId = Cookies.get("userId");
+        // Get userId from cookies (you'll need to implement Cookies.get)
+        // For now using direct userId, replace with: const userId = Cookies.get("userId");
+        // const userId = "68aa0601be394aab95787939";
+        
+        if (!userId) {
+          throw new Error("User not logged in!");
+        }
+        
+        console.log('Fetching data for userId:', userId);
+        
+        // Fetch current user data
+        const userResponse = await fetch(`https://hemobackned.azurewebsites.net/api/auth/${userId}`);
+        if (!userResponse.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        const userData = await userResponse.json();
+        console.log('User data:', userData);
+        setUserData(userData);
+        
+        // Fetch donors data (starting with page 1, you can add pagination later)
+        const donorsResponse = await fetch('https://hemobackned.azurewebsites.net/api/donors?limit=10&page=1');
+        if (!donorsResponse.ok) {
+          throw new Error('Failed to fetch donors data');
+        }
+        const donorsData = await donorsResponse.json();
+        console.log('Donors data:', donorsData);
+        setDonorData(donorsData);
+        setLoading(false);
+        
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError('Failed to load data. Please try again.');
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // const callAzureAIAgent = async (userMessage: string): Promise<string> => {
+  //   try {
+  //     // Here you would integrate with your Azure AI Agent
+  //     // For now, I'll create intelligent responses based on actual user and donor data
+      
+  //     await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+      
+  //     // Generate contextual responses based on real data
+  //     const userBloodGroup = userData?.user.generalInfo.bloodGroup;
+  //     const userCondition = userData?.user.patientInfo.condition;
+  //     const totalDonors = donorData?.total || 0;
+  //     const eligibleDonors = donorData?.donors.filter(d => d.eligibility_status === 'eligible').length || 0;
+      
+  //     const contextualResponses = [
+  //       `I've analyzed the donor database with ${totalDonors.toLocaleString()} registered donors. For your ${userBloodGroup} blood type and ${userCondition} condition, I found ${eligibleDonors} currently eligible donors in your area. Your next transfusion is scheduled for ${new Date(userData?.user.patientInfo.expectedNextTransfusionDate || '').toLocaleDateString()}.`,
+        
+  //       `Based on your donor profile, you've completed ${userData?.user.donorInfo.donationsTillDate} donations as a ${userData?.user.donorInfo.donorType} donor. Your next eligible donation date is ${new Date(userData?.user.donorInfo.nextEligibleDate || '').toLocaleDateString()}. I can help you find compatible recipients who urgently need ${userBloodGroup} blood.`,
+        
+  //       `Your AI health tracker indicates optimal donation timing for ${new Date(userData?.user.aiTracker.predictedNextDonationDate || '').toLocaleDateString()}. With your bridge donor status and ${userBloodGroup} blood type, you can help ${userData?.user.aiTracker.bridgeBloodGroup} recipients through our bridge program.`,
+        
+  //       `Emergency alert capability activated! As a ${userBloodGroup} donor, you're critical for emergency cases. I'm monitoring ${totalDonors.toLocaleString()} donors across Hyderabad. Your location data shows you're in the optimal zone for rapid response donations.`,
+        
+  //       `Analyzing compatibility matrix: Your ${userBloodGroup} blood type is compatible with multiple recipient types. Current database shows ${eligibleDonors} active donors, with ${donorData?.donors.filter(d => d.days_until_next_eligible <= 0).length} immediately available for emergency requests.`
+  //     ];
+      
+  //     // You can enhance this further by integrating the actual Azure AI Agent code:
+  //     /*
+  //     const response = await project.agents.runs.create_and_process({
+  //       thread_id: thread.id,
+  //       agent_id: agent.id
+  //     });
+  //     return response.content;
+  //     */
+      
+  //     return contextualResponses[Math.floor(Math.random() * contextualResponses.length)];
+      
+  //   } catch (error) {
+  //     console.error('AI Agent Error:', error);
+  //     return "I'm experiencing some technical difficulties. Please try again in a moment. In the meantime, you can contact your healthcare provider for immediate assistance.";
+  //   }
+  // };
+
+const callAzureAIAgent = async (userMessage: string): Promise<string> => {
+  try {
+    // You will need to set these environment variables or replace the values directly
+    const endpoint = process.env["AZURE_OPENAI_ENDPOINT"] || "https://padal-meooqw75-eastus2.openai.azure.com/";
+    const apiKey = process.env["AZURE_OPENAI_API_KEY"] || "<REPLACE_WITH_YOUR_KEY_VALUE_HERE>";
+    const apiVersion = "2025-01-01-preview";
+    const deployment = "gpt-5-mini-2"; // This must match your deployment name
+
+    // Initialize the Azure OpenAI client
+    const client = new AzureOpenAI({ endpoint, apiKey, apiVersion, deployment });
+
+    // Make the chat completion request
+   const result = await client.chat.completions.create({
+      // ----------------------------------------------------
+      // Add this line to fix the error
+      model: deployment, 
+      // ----------------------------------------------------
+      messages: [
+        { role: "system", content: "You are a helpful and human-like AI assistant." },
+        { role: "user", content: userMessage }
+      ],
+      max_completion_tokens: 16384 
+    });
+
+    // Check if the response is valid and return the content
+    if (result.choices && result.choices.length > 0 && result.choices[0].message) {
+      return result.choices[0].message.content || "I couldn't generate a response.";
     }
-  }, [mapboxToken, mapInitialized]);
 
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 95) return 'text-success';
-    if (confidence >= 85) return 'text-primary';
-    if (confidence >= 75) return 'text-primary/70';
-    return 'text-muted-foreground';
+    // Fallback message if no valid response is received
+    return "I apologize, but I couldn't generate a response. Please try again.";
+    
+  } catch (error) {
+    console.error('AI Agent Error:', error);
+    return "I'm experiencing some technical difficulties connecting to the AI assistant. Please try again in a moment. In the meantime, you can contact your healthcare provider for immediate assistance.";
+  }
+};
+
+
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim()) return;
+
+    const userMessage: Message = {
+      role: 'user',
+      content: inputMessage,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputMessage('');
+    setIsLoading(true);
+
+    try {
+      // Call the actual Azure AI Agent or enhanced AI response
+      const aiResponse = await callAzureAIAgent(inputMessage);
+      
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: aiResponse,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const getConfidenceBg = (confidence: number) => {
-    if (confidence >= 95) return 'bg-success/10 border-success/20';
-    if (confidence >= 85) return 'bg-primary/10 border-primary/20';
-    if (confidence >= 75) return 'bg-primary/5 border-primary/10';
-    return 'bg-muted/10 border-border';
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
-  const handleEmergencyToggle = () => {
-    setEmergencyMode(!emergencyMode);
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white to-red-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your blood match data...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const handleContactDonor = (donor: any) => {
-    // In a real app, this would trigger a contact flow
-    console.log('Contacting donor:', donor.name);
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white to-red-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-xl mb-4">⚠️</div>
+          <p className="text-red-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  const handleRequestBlood = (donor: any) => {
-    // In a real app, this would trigger a blood request
-    console.log('Requesting blood from:', donor.name);
-  };
+  if (!userData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white to-red-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-section-gradient">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            Blood Match Finder
-          </h1>
-          <p className="text-lg text-muted-foreground mb-6">
-            AI-powered donor matching to save lives faster
-          </p>
-          
-          {/* Emergency Mode Toggle */}
-          <Button 
-            variant={emergencyMode ? "destructive" : "outline"}
-            size="lg"
-            onClick={handleEmergencyToggle}
-            className={`mb-6 ${emergencyMode ? 'animate-pulse' : ''}`}
-          >
-            <Zap className="mr-2 h-5 w-5" />
-            {emergencyMode ? 'Emergency Mode Active' : 'Activate Emergency Mode'}
-          </Button>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-white to-red-50 p-4">
+      <div className="max-w-7xl mx-auto flex gap-6 h-[calc(100vh-2rem)]">
+        {/* User Profile Sidebar */}
+        <div className="w-80 bg-white rounded-2xl shadow-lg border border-red-100 p-6 overflow-y-auto">
+          {/* Profile Header */}
+          <div className="text-center mb-6 pb-4 border-b border-red-100">
+            <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white text-2xl font-bold">
+                {userData.user.firstName.charAt(0)}{userData.user.lastName.charAt(0)}
+              </span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-800">{userData.user.firstName} {userData.user.lastName}</h2>
+            <span className="inline-block bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+              {userData.user.role}
+            </span>
+          </div>
 
-        {/* Emergency Alert */}
-        {emergencyMode && (
-          <Alert className="mb-6 border-destructive bg-destructive/5">
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-            <AlertDescription className="text-destructive font-medium">
-              Emergency mode activated. Prioritizing immediate available donors and fastest response times.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Mapbox Token Input (temporary for demo) */}
-        {!mapInitialized && (
-          <Card className="mb-6 border-primary/20 bg-primary/5">
-            <CardHeader>
-              <CardTitle className="text-primary">Setup Required</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                To view the interactive map, please enter your Mapbox public token. 
-                Get one free at <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">mapbox.com</a>
-              </p>
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="Enter your Mapbox public token"
-                  value={mapboxToken}
-                  onChange={(e) => setMapboxToken(e.target.value)}
-                  className="flex-1"
-                />
-                <Button onClick={initializeMap} disabled={!mapboxToken}>
-                  Initialize Map
-                </Button>
+          {/* General Information */}
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-red-600 mb-3 uppercase tracking-wider">General Info</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Blood Group</span>
+                <span className="bg-gradient-to-r from-red-500 to-red-600 text-white px-2 py-1 rounded-lg text-xs font-bold">
+                  {userData.user.generalInfo.bloodGroup}
+                </span>
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="bloodType">Blood Type Needed</Label>
-                <select 
-                  id="bloodType"
-                  value={selectedBloodType}
-                  onChange={(e) => setSelectedBloodType(e.target.value)}
-                  className="w-full mt-1 p-2 border border-input rounded-md bg-background"
-                >
-                  {bloodTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Gender</span>
+                <span className="text-xs font-medium text-gray-800">{userData.user.generalInfo.gender}</span>
               </div>
-              <div>
-                <Label htmlFor="radius">Search Radius (miles)</Label>
-                <Input
-                  id="radius"
-                  type="number"
-                  value={searchRadius}
-                  onChange={(e) => setSearchRadius(Number(e.target.value))}
-                  min="1"
-                  max="50"
-                  className="mt-1"
-                />
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Location</span>
+                <span className="text-xs font-medium text-gray-800">{userData.user.generalInfo.city}</span>
               </div>
-              <div className="flex items-end">
-                <Button variant="outline" className="w-full">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Apply Filters
-                </Button>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Phone</span>
+                <span className="text-xs font-medium text-gray-800">{userData.user.generalInfo.phoneNumber}</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Map Section */}
-          <Card className="hover:shadow-glow transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                Nearby Donors Map
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="relative w-full h-96 rounded-lg overflow-hidden">
-                <div ref={mapContainer} className="absolute inset-0" />
-                {!mapInitialized && (
-                  <div className="absolute inset-0 bg-muted/50 flex items-center justify-center">
-                    <div className="text-center">
-                      <Navigation className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-muted-foreground">Map will appear here</p>
-                    </div>
-                  </div>
-                )}
+          {/* Patient Information */}
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-red-600 mb-3 uppercase tracking-wider">Patient Info</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Condition</span>
+                <span className="text-xs font-medium text-gray-800">{userData.user.patientInfo.condition}</span>
               </div>
-              <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-primary"></div>
-                  <span>Emergency Donors</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-card border border-primary/50"></div>
-                  <span>Regular Donors</span>
-                </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Frequency</span>
+                <span className="text-xs font-medium text-gray-800">{userData.user.patientInfo.transfusionFrequency}</span>
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Hospital</span>
+                <span className="text-xs font-medium text-gray-800">{userData.user.patientInfo.hospital}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Next Transfusion</span>
+                <span className="text-xs font-medium text-red-600">{formatDate(userData.user.patientInfo.expectedNextTransfusionDate)}</span>
+              </div>
+            </div>
+          </div>
 
-          {/* Donor List */}
-          <Card className="hover:shadow-glow transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-primary" />
-                Top AI Matches
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {nearbyDonors.map((donor) => (
-                  <div key={donor.id} className={`p-4 rounded-lg border transition-all duration-200 hover:shadow-card ${
-                    emergencyMode && donor.emergencyDonor 
-                      ? 'border-primary bg-primary/5 shadow-glow' 
-                      : 'border-border bg-card/50'
-                  }`}>
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-bold text-primary">{donor.bloodType}</span>
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-foreground flex items-center gap-2">
-                            {donor.name}
-                            {donor.verified && <Shield className="h-4 w-4 text-success" />}
-                            {donor.emergencyDonor && <Zap className="h-4 w-4 text-primary" />}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">{donor.distance} miles away</p>
-                        </div>
-                      </div>
-                      <Badge className={getConfidenceBg(donor.aiConfidence)}>
-                        <span className={getConfidenceColor(donor.aiConfidence)}>
-                          {donor.aiConfidence}% AI Match
-                        </span>
-                      </Badge>
-                    </div>
+          {/* Donor Information */}
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-red-600 mb-3 uppercase tracking-wider">Donor Info</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Type</span>
+                <span className="text-xs font-medium text-gray-800">{userData.user.donorInfo.donorType}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Donations</span>
+                <span className="text-xs font-medium text-gray-800">{userData.user.donorInfo.donationsTillDate}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Next Eligible</span>
+                <span className="text-xs font-medium text-green-600">{formatDate(userData.user.donorInfo.nextEligibleDate)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Status</span>
+                <span className={`text-xs font-medium ${userData.user.donorInfo.willingToDonate ? 'text-green-600' : 'text-yellow-600'}`}>
+                  {userData.user.donorInfo.willingToDonate ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+            </div>
+          </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Availability:</span>
-                        <p className="font-medium text-foreground">{donor.availability}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Last Donation:</span>
-                        <p className="font-medium text-foreground">{donor.lastDonation}</p>
-                      </div>
-                    </div>
+          {/* AI Tracker */}
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-red-600 mb-3 uppercase tracking-wider">AI Insights</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Predicted Next</span>
+                <span className="text-xs font-medium text-blue-600">{formatDate(userData.user.aiTracker.predictedNextDonationDate)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Bridge Status</span>
+                <span className={`text-xs font-medium ${userData.user.aiTracker.bridgeStatus ? 'text-green-600' : 'text-gray-600'}`}>
+                  {userData.user.aiTracker.bridgeStatus ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+            </div>
+          </div>
 
-                    <p className="text-xs text-muted-foreground mb-4">{donor.notes}</p>
-
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => handleRequestBlood(donor)}
-                      >
-                        <Clock className="mr-2 h-4 w-4" />
-                        Request Blood
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleContactDonor(donor)}
-                      >
-                        <Phone className="mr-2 h-4 w-4" />
-                        Contact
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                      >
-                        <MessageCircle className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+          {/* Badges */}
+          {userData.user.badges.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-red-600 mb-3 uppercase tracking-wider">Achievements</h3>
+              <div className="flex flex-wrap gap-2">
+                {userData.user.badges.map((badge, index) => (
+                  <span key={index} className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium">
+                    {badge}
+                  </span>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          )}
         </div>
 
-        {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-primary mb-2">4</div>
-              <p className="text-sm text-muted-foreground">Compatible Donors Found</p>
-            </CardContent>
-          </Card>
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-success mb-2">98%</div>
-              <p className="text-sm text-muted-foreground">Highest AI Confidence</p>
-            </CardContent>
-          </Card>
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-primary mb-2">0.8</div>
-              <p className="text-sm text-muted-foreground">Miles to Nearest</p>
-            </CardContent>
-          </Card>
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-primary mb-2">2</div>
-              <p className="text-sm text-muted-foreground">Emergency Donors</p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* AI Chat Interface */}
+        <div className="flex-1 bg-white rounded-2xl shadow-lg border border-red-100 flex flex-col">
+          {/* Chat Header */}
+          <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-t-2xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <Bot className="w-6 h-6" />
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold">AI Blood Match Assistant</h1>
+                <p className="text-red-100 text-sm">Trained on {donorData?.total.toLocaleString()} donor profiles</p>
+              </div>
+            </div>
+          </div>
 
-        {/* Call to Action */}
-        <div className="text-center mt-12">
-          <h2 className="text-2xl font-bold text-foreground mb-4">
-            Every Second Counts
-          </h2>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            Our AI-powered matching system finds the most compatible donors in your area, 
-            ensuring faster, safer transfusions when you need them most.
-          </p>
-          <Button size="lg" className="animate-glow">
-            <Zap className="mr-2 h-5 w-5" />
-            Find Emergency Donors
-          </Button>
+          {/* Messages */}
+          <div className="flex-1 p-4 overflow-y-auto space-y-4">
+            {messages.map((message, index) => (
+              <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[80%] rounded-2xl p-4 ${
+                  message.role === 'user' 
+                    ? 'bg-gradient-to-r from-red-500 to-red-600 text-white' 
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  <div className="flex items-start gap-2">
+                    {message.role === 'assistant' && (
+                      <Bot className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    )}
+                    {message.role === 'user' && (
+                      <User className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
+                    )}
+                    <div className="flex-1">
+                      <p className="text-sm leading-relaxed">{message.content}</p>
+                      <p className={`text-xs mt-2 ${message.role === 'user' ? 'text-red-100' : 'text-gray-500'}`}>
+                        {message.timestamp.toLocaleTimeString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 rounded-2xl p-4 max-w-[80%]">
+                  <div className="flex items-center gap-2">
+                    <Bot className="w-5 h-5 text-red-500" />
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Message Input */}
+          <div className="p-4 border-t border-gray-200">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Ask about compatible donors, donation eligibility, or get personalized recommendations..."
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim() || isLoading}
+                className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                'Find compatible donors near me',
+                'When is my next eligible donation?',
+                'Emergency blood request',
+                'My transfusion schedule'
+              ].map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => setInputMessage(suggestion)}
+                  className="text-xs px-3 py-1 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
